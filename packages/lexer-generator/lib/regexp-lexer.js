@@ -208,11 +208,11 @@ function generateFromOpts (lexer, opt) {
 }
 
 function generateModuleBody (opt, templateParm) {
-    const templatePath = Path.join(__dirname, '..', 'templates', (templateParm || 'javascript')) + '.yaml';
-    const template = new FileTemplate(templatePath, templatePath.endsWith(".json") ? FileTemplate.Format.JSON : FileTemplate.Format.YAML);
+    const unitTemplatePath = Path.join(__dirname, '..', 'templates', (templateParm || 'javascript')) + '.yaml';
+    const unitTemplate = new FileTemplate(unitTemplatePath, unitTemplatePath.endsWith(".json") ? FileTemplate.Format.JSON : FileTemplate.Format.YAML);
 
     var strs = {EOF: "1", options:JSON.stringify(opt.options)};
-    const lexer = {strs, template};
+    const lexer = {strs, unitTemplate};
     if (opt.options) {
         lexer.options = JSON.stringify(opt.options);
     }
@@ -238,7 +238,7 @@ function generateModuleCore(lexer, opt, components) {
         { token: "ACTION_INCLUDE", value: opt.actionInclude || '' },
         { token: "STATE_ACTIONS", value: String(lexer.strs.performAction) },
     ];
-    const moduleCode = components.map(k => lexer.template.substitute(k, templateParms)).join('\n');
+    const moduleCode = components.map(k => lexer.unitTemplate.substitute(k, templateParms)).join('\n');
     out += moduleCode;
 
     if (opt.moduleInclude) {

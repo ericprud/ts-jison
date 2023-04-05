@@ -11,6 +11,7 @@ const Lexer      = require('@ts-jison/lexer-generator');
 const ebnfParser = require('@ts-jison/ebnf-parser');
 const {JisonParser} = require("@ts-jison/parser");
 const {JisonLexer} = require("@ts-jison/lexer");
+const {FileTemplate} = require('@ts-jison/common-generator');
 const JSONSelect = require('JSONSelect');
 const esprima    = require('esprima');
 const escodegen  = require('escodegen');
@@ -86,7 +87,6 @@ var Production = typal.construct({
 
 var generator = typal.beget();
 
-var Template = 'typescript';
 generator.constructor = function Jison_Generator (grammar, opt) {
     if (typeof grammar === 'string') {
         grammar = ebnfParser.parse(grammar);
@@ -114,13 +114,12 @@ generator.constructor = function Jison_Generator (grammar, opt) {
     this.DEBUG = options.debug || false;
     if (this.DEBUG) this.mix(generatorDebug); // mixin debug methods
 
-    const templatePath = Path.join(__dirname, '../templates', (opt.template || 'javascript')) + '.yaml';
-    const templateText = Fs.readFileSync(templatePath, "utf8")
-    const template = JsYaml.load(templateText);
+    const unitTemplatePath = Path.join(__dirname, '../templates', (opt.template || 'javascript')) + '.yaml'; // default to js 'cause ts users are more accustomed to fiddling
+    const unitTemplate = new FileTemplate(unitTemplatePath, unitTemplatePath.endsWith(".json") ? FileTemplate.Format.JSON : FileTemplate.Format.YAML);
+    parser.unitTemplate = unitTemplate;
 
-    parser.template = template;
     parser.parseParams = grammar.parseParams;
-    lrGeneratorMixin.parseError = template.ParseError;
+    lrGeneratorMixin.parseError = unitTemplate.substitute("ParseError", []);
 
     this.processGrammar(grammar);
 
@@ -970,9 +969,9 @@ lrGeneratorMixin.generate = function parser_generate (opt) {
             break;
         default:
             code =
-                parser.template.Import + "\n"
+                parser.unitTemplate.substitute("Import", []) + "\n"
                 + this.generateModuleCore(opt)
-                // + parser.template.Export.replace(/{{NAME}}/g, opt.moduleName || "");
+                // + parser.unitTemplate.substitute("Export", [{ token: "NAME", value: opt.moduleName || "" }]);
             break;
     }
 
@@ -1126,6 +1125,7 @@ lrGeneratorMixin.generateModuleCode = function generateModuleCode (opt) {
 
     // Generate the module creation code
     var templateParms = [
+        { token: "NAME", value: opt.moduleName || "" },
         { token: "STATE_TABLE_FACTORS", value: tableCode.commonCode },
         { token: "STATE_NAMES", value: JSON.stringify(this.symbols_) },
         { token: "TERMINALS", value: JSON.stringify(this.terminals_).replace(/"([0-9]+)":/g,"$1:") },
@@ -1137,12 +1137,8 @@ lrGeneratorMixin.generateModuleCode = function generateModuleCode (opt) {
         { token: "STATE_ACTIONS", value: String(this.performAction) },
     ];
 
-    const preSubstitution = parser.template.Constructor
-                + parser.template.Export.replace(/{{NAME}}/g, opt.moduleName || "");
-    moduleCode = templateParms.reduce(function (str, parm) {
-        return repl(str, parm.token, parm.value);
-    }, preSubstitution);
-    moduleCode = moduleCode.replace(/{{NAME}}/g, opt.moduleName || "");
+    moduleCode = parser.unitTemplate.substitute("Constructor", templateParms)
+          + parser.unitTemplate.substitute("Export", templateParms);
 
     return moduleCode;
 

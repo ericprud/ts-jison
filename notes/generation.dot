@@ -23,6 +23,7 @@ digraph G {
     Jison_Generator [label="Jison_Generator",shape=Mdiamond]
     processGrammar [label="processGrammar{,Def}"]
     Jison_Generator -> processGrammar
+    Jison_Generator -> generate [penwidth=10,color=lightgrey]
 
     processGrammar -> processOperators
     processGrammar -> buildProductions
@@ -69,6 +70,7 @@ LprocessGrammar [shape=record,label=<
     LRegExpLexer -> LprocessGrammar
     LRegExpLexer -> LgenerateModuleBody
     LRegExpLexer -> LgenerateFromOpts
+    LRegExpLexer -> Lgenerate [penwidth=10,color=lightpink]
 
     Lgenerate -> LprocessGrammar
     Lgenerate -> LgenerateModuleBody

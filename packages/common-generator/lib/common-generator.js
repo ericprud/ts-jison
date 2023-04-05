@@ -40,7 +40,9 @@ class FileTemplate extends Map {
         if (!this.has(key))
             throw new Error(`key ${key} not found in ${this.from}`);
         const raw = this.get(key);
-        return mappings.reduce((ret, m) => ret.replace(RegExp(`{{${m.token}}}`, 'g'), m.value), raw);
+        return mappings.reduce((ret, m) => ret.replace(RegExp(`{{${m.token}}}`, 'g'), () => m.value // avoids susbtition of replacement pattern, e.g. $$, c.f.
+        // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace#specifying_a_string_as_the_replacement
+        ), raw);
     }
 }
 exports.FileTemplate = FileTemplate;

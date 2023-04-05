@@ -1,0 +1,57 @@
+# CLASS - constructed class defining {{NAME}}{{ROLE}}, e.g. FooParser
+# INCLDUES - `moduleIncludes` supporing CLASS's semantic actions
+UNIT: |
+  {{CLASS}}
+  {{INCLUDES}}
+
+# NAME - name of e.g. parser, can be ''
+# ROLE - e.g. 'Parser' or 'Lexer'
+# requires export: object - module export system for e.g. `exports=...` or object defined in outer scope
+ENCAPSULATION: |
+  {{UNIT}}
+  exports.{{NAME}}{{ROLE}} = {{NAME}}{{ROLE}}
+
+# ENCAPSULATIONS is a list of the above, e.g. for a parser and a lexer
+MODULE_CODE: |
+  const {{NAME}} = (function(){
+  const exports = {}
+  {{ENCAPSULATIONS}}
+  return exports;
+  })();
+
+js: |
+  {{HEADER}}
+  {{MODULE_CODE[]}}
+  })();
+
+amd: |
+  {{HEADER}}
+  define(function(require){
+  // const {JisonParser} = require('@ts-jison/parser');
+  {{MODULE_CODE[]}}
+  })();
+
+commonjs: |
+  {{HEADER}}
+  {{MODULE_CODE}}
+  if (typeof require !== 'undefined' && typeof exports !== 'undefined') {
+    exports.{{NAME}} = parser.Parser;
+    exports.parse = function () { return new {{NAME}}.parse(arguments); };
+    exports.main = function commonjsMain (args) {
+      if (!args[1]) {
+        console.log('Usage: '+args[0]+' FILE');
+        process.exit(1);
+      }
+      var source = require('fs').readFileSync(require('path').normalize(args[1]), "utf8");
+      return exports.parse.parse(source);
+    };
+    if (typeof module !== 'undefined' && require.main === module) {
+      exports.main(process.argv.slice(1));
+    }
+  }
+
+default: |
+  {{HEADER}}
+  const {JisonParser} = require('@ts-jison/parser');
+  {{ENCAPSULATIONS}}
+
