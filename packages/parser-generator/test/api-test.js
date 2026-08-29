@@ -349,6 +349,38 @@ describe("api", () => {
     expect(loc.last_column).toBe(2);
   });
 
+  it("test empty productions contribute no location",  () => {
+    // `Opt x`: the empty Opt must not pull @$ back to the token before it;
+    // `x Opt`: nor push it forward.  An empty production reduces to a
+    // zero-width location just before the lookahead.
+    const grammar = {
+      tokens: [ 'x', 'y' ],
+      startSymbol: "S",
+      bnf: {
+        "S" :[ ['y A', 'return @A'] ],
+        "A" :[ ['Opt x Opt', 'return @$'] ],
+        "Opt" :[ '' ]
+      }
+    };
+    const lexData = {
+      rules: [
+        {pattern: "\\s", action: "/*ignore*/"},
+        {pattern: "x", action: "return 'x';"},
+        {pattern: "y", action: "return 'y';"}
+      ]
+    };
+    const gen = new Jison.Generator(grammar);
+    const parser = gen.createParser();
+    parser.lexer = new Lexer(lexData);
+    const loc = parser.parse('y   x   ');
+
+    expect(loc.first_line).toBe(1);
+    expect(loc.first_column).toBe(4);   // x, not y
+    expect(loc.last_line).toBe(1);
+    expect(loc.last_column).toBe(5);    // ...and no further
+    expect(loc.empty).toBeUndefined();
+  });
+
   it("test locations by term name in action",  () => {
     const grammar = {
       tokens: [ 'x', 'y' ],

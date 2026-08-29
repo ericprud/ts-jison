@@ -5,6 +5,9 @@ export interface TokenLocation {
   last_column: number;
   /** where the numbers are indexes into the input string, regular zero-based */
   range?: [number, number];
+  /** a production of nothing: placed, but with no extent to lend the
+   * production it is part of (see the parser's reduce) */
+  empty?: boolean;
 }
 
 export type ParseErrorType = (str: string, hash: ParseErrorHashType) => void;

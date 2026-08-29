@@ -213,15 +213,38 @@ export abstract class JisonParser {
 
           // perform semantic action
           yyval.$ = vstack[vstack.length - len]; // default to $$ = $1
-          // default location, uses first token for firsts, last for lasts
-          yyval._$ = {
-            first_line: lstack[lstack.length - (len || 1)].first_line,
-            last_line: lstack[lstack.length - 1].last_line,
-            first_column: lstack[lstack.length - (len || 1)].first_column,
-            last_column: lstack[lstack.length - 1].last_column
-          };
-          if (ranges) {
-            yyval._$.range = [lstack[lstack.length - (len || 1)].range![0], lstack[lstack.length - 1].range![1]];
+          // Default location: from the first symbol that is really there to
+          // the last.  An empty production has no extent, so it must not
+          // lend one: reduced, it is placed just before the lookahead (zero
+          // width) and marked empty, and a production merging its symbols'
+          // locations skips the empty ones -- otherwise `Opt predicate`
+          // would start at the token before Opt, and `predicate Opt` end
+          // there too.  A production of nothing but empties is itself empty.
+          const children = len ? lstack.slice(lstack.length - len) : [];
+          const present = children.filter(l => !l.empty);
+          if (present.length) {
+            const first = present[0], last = present[present.length - 1];
+            yyval._$ = {
+              first_line: first.first_line,
+              last_line: last.last_line,
+              first_column: first.first_column,
+              last_column: last.last_column
+            };
+            if (ranges) {
+              yyval._$.range = [first.range![0], last.range![1]];
+            }
+          } else {
+            const at = lexer.yylloc;
+            yyval._$ = {
+              first_line: at.first_line,
+              last_line: at.first_line,
+              first_column: at.first_column,
+              last_column: at.first_column,
+              empty: true
+            };
+            if (ranges) {
+              yyval._$.range = [at.range![0], at.range![0]];
+            }
           }
           // @ts-ignore
           r = this.performAction.apply(yyval, [yytext, yyleng, yylineno, sharedState.yy, action[1], vstack, lstack].concat(args));
