@@ -11,8 +11,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/zaach/ebnf-parser.git"
+    "url": "https://github.com/ericprud/ts-jison"
   },
+  "homepage": "https://github.com/ericprud/ts-jison/",
   "keywords": [
     "bnf",
     "ebnf",
@@ -20,7 +21,6 @@
     "parser",
     "jison"
   ],
-  "homepage": "https://github.com/ericprud/ts-jison/",
   "author": "Zach Carter",
   "contributors": [
     {

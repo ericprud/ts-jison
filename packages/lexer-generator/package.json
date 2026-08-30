@@ -16,10 +16,6 @@
     "typescript"
   ],
   "preferGlobal": true,
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/ericprud/ts-jison.git"
-  },
   "bugs": {
     "url": "http://github.com/ericprud/ts-jison/issues"
   },
@@ -48,6 +44,10 @@
   "scripts": {
     "build": "echo nothing to build in lexer-generator",
     "test": "node ./tests/all-tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ericprud/ts-jison"
   },
   "homepage": "https://github.com/ericprud/ts-jison/",
   "author": "Zach Carter",

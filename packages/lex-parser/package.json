@@ -11,16 +11,16 @@
     "build": "make build",
     "test": "make test"
   },
-  "repository": {
-    "type": "git",
-    "repository": "https://github.com/zaach/lex-parser.git"
-  },
   "keywords": [
     "lexical",
     "grammar",
     "parser",
     "jison"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ericprud/ts-jison"
+  },
   "homepage": "https://github.com/ericprud/ts-jison/",
   "author": "Zach Carter",
   "contributors": [

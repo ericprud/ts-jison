@@ -16,6 +16,10 @@
   "scripts": {
     "build": "tsc -b ./tsconfig.package.json"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ericprud/ts-jison"
+  },
   "homepage": "https://github.com/ericprud/ts-jison/",
   "author": "Zach Carter",
   "contributors": [
