@@ -1,6 +1,6 @@
 {
   "name": "@ts-jison/ebnf-parser",
-  "version": "0.4.1-alpha.1",
+  "version": "0.4.1-alpha.4",
   "description": "A parser for BNF and EBNF grammars used by jison",
   "main": "ebnf-parser.js",
   "publishConfig": {

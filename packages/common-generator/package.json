@@ -1,6 +1,6 @@
 {
   "name": "@ts-jison/common-generator",
-  "version": "0.4.1-alpha.1",
+  "version": "0.4.1-alpha.4",
   "license": "MIT",
   "main": "./lib/common-generator.js",
   "types": "./src/common-generator.ts",
@@ -8,7 +8,7 @@
     "lib"
   ],
   "devDependencies": {
-    "@ts-jison/common": "^0.4.1-alpha.1"
+    "@ts-jison/common": "^0.4.1-alpha.4"
   },
   "publishConfig": {
     "access": "public"

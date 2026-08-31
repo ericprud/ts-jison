@@ -1,6 +1,6 @@
 {
   "name": "@ts-jison/lex-parser",
-  "version": "0.4.1-alpha.1",
+  "version": "0.4.1-alpha.4",
   "description": "A parser for lexical grammars used by jison",
   "main": "./lib/lex-parser.js",
   "types": "./src/lex-parser.ts",

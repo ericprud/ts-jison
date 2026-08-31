@@ -1,6 +1,6 @@
 {
   "name": "@ts-jison/common",
-  "version": "0.4.1-alpha.3",
+  "version": "0.4.1-alpha.4",
   "license": "MIT",
   "main": "./lib/common.js",
   "types": "./lib/common.d.ts",
