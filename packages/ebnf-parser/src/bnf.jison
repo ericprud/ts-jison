@@ -35,6 +35,8 @@ id                [a-zA-Z][a-zA-Z0-9_-]*
 "%nonassoc"             return 'NONASSOC';
 "%parse-param"          return 'PARSE_PARAM';
 "%options"              return 'OPTIONS';
+"%type"[\W]+"<"[^<>]*("<"[^<>]*">")*[^<>]*">" 
+                        return 'TYPES';
 
 /* []s around '%' and '/' allow jison to parse its on grammar */
 [%]"lex"[\w\W]*?[/]"lex" return 'LEX_BLOCK';
@@ -113,11 +115,18 @@ declaration
         {$$ = {parseParam: $1};}
     | options
         {$$ = {options: $1};}
+    | type
+        {$$ = {type: $1};}
     ;
 
 options
     : OPTIONS token_list
         {$$ = $2;}
+    ;
+
+type
+    : TYPES token_list
+        { {const t = $1.substring($1.indexOf('<') + 1, $1.lastIndexOf('>')); $$ = {}; for (const token of $2) {$$[token] = t;}} }
     ;
 
 parse_param

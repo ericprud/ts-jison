@@ -9,6 +9,7 @@ export interface Grammar {
     declaration_list: Array<[string, string]>;
     declaration: TokenAction[];
     options: TokenAction[];
+    type: TokenAction[];
     parse_param: TokenAction[];
     operator: TokenAction[];
     associativity: TokenAction[];

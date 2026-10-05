@@ -42,6 +42,8 @@ function hexlify (str:string): string {
 %right '%'
 %left UMINUS
 
+%type <number> e expressions
+
 %start expressions
 
 %% /* language grammar */

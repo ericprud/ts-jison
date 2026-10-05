@@ -11,6 +11,7 @@ export interface Grammar {
   declaration_list: Array<[string, string]>, // init, assignment, e.g. [ ['declaration_list declaration', '$$ = $1; yy.addDeclaration($$, $2);'], [ '', '$$ = {};' ] ]
   declaration: TokenAction[], // e.g. [ [ 'START id', '$$ = {start: $2};' ], [ 'LEX_BLOCK', '$$ = {lex: $1};' ], ... ]
   options: TokenAction[], // [ [ 'OPTIONS token_list', '$$ = $2;' ] ],
+  type: TokenAction[], // [ [ 'TYPE token_list', '{const t = $1.substr($1.indexOf('<') + 1, $1.length - 1);for (const token of $2) {$$[$2] = t;}}' ] ],
   parse_param: TokenAction[], // [ [ 'PARSE_PARAM token_list', '$$ = $2;' ] ],
   operator: TokenAction[], // [ [ 'associativity token_list', '$$ = [$1]; $$.push.apply($$, $2);' ] ],
   associativity: TokenAction[], // [ [ 'LEFT', "$$ = 'left';" ] ]

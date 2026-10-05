@@ -2,15 +2,20 @@ Import: |
   import { JisonLexer, JisonLexerApi } from '@ts-jison/lexer';
 
 Constructor: |
+  type YY_ = {
+    yytext: string; 
+    yyleng: number;
+    yylineno: number;
+  };
   export class {{NAME}}Lexer extends JisonLexer implements JisonLexerApi {
       options: any = {{OPTIONS}};
-      constructor (yy = {}) {
+      constructor (yy: any = {}) {
           super(yy);
       }
   
       rules: RegExp[] = {{RULES}};
       conditions: any = {{CONDITIONS}}
-      performAction (yy:any,yy_:any,$avoiding_name_collisions:any,YY_START:any): any {
+      performAction (yy:any,yy_:YY_,$avoiding_name_collisions:any,YY_START:any): any {
   {{ACTION_INCLUDE}}          var YYSTATE=YY_START;
           switch($avoiding_name_collisions) {
   {{STATE_ACTIONS}}

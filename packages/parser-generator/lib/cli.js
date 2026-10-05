@@ -34,9 +34,18 @@ function getCommandlineOptions () {
         .option('debug', {
             abbr : 'd',
             flag : true,
-        default:
-            false,
+            default: false,
             help : 'Debug mode'
+        })
+        .option('warn-untyped-nterm', {
+            default: false,
+            flag: true,
+            help: "Show warning when a non-terminal is not typed"
+        })
+        .option('show-nterm', {
+            default: false,
+            flag: true,
+            help: "Show non-terminal name after case labels"
         })
         .option('module-type', {
             abbr : 'm',
@@ -165,6 +174,12 @@ cli.generateParserString = function generateParserString(opts, grammar) {
     }
     if (opts.template) {
         settings.template = opts.template;
+    }
+    if (opts['show-nterm']) {
+        settings.showNTerm = opts['show-nterm']
+    }
+    if (opts['warn-untyped-nterm']) {
+        settings.warnUntypedNTerm = opts['warn-untyped-nterm']
     }
 
     var generator = new jison.Generator(grammar, Object.assign({makeGenerators: true}, settings));

@@ -121,7 +121,7 @@ generator.constructor = function Jison_Generator (grammar, opt) {
     parser.parseParams = grammar.parseParams;
     lrGeneratorMixin.parseError = template.ParseError;
 
-    this.processGrammar(grammar);
+    this.processGrammar(grammar, opt);
 
     if (grammar.lex) {
         var dict = Object.assign({}, grammar.lex);
@@ -140,9 +140,10 @@ generator.constructor = function Jison_Generator (grammar, opt) {
     }
 };
 
-generator.processGrammar = function processGrammarDef (grammar) {
+generator.processGrammar = function processGrammarDef (grammar, options) {
     var bnf = grammar.bnf,
         tokens = grammar.tokens,
+        types = grammar.type || {},
         nonterminals = this.nonterminals = {},
         productions = this.productions,
         self = this;
@@ -165,7 +166,7 @@ generator.processGrammar = function processGrammarDef (grammar) {
     var operators = this.operators = processOperators(grammar.operators);
 
     // build productions from cfg
-    this.buildProductions(bnf, productions, nonterminals, symbols, operators);
+    this.buildProductions(bnf, productions, nonterminals, symbols, operators, types, options);
 
     if (tokens && this.terminals.length !== tokens.length) {
         self.trace("Warning: declared tokens differ from tokens found in rules.");
@@ -217,14 +218,17 @@ function processOperators (ops) {
     return operators;
 }
 
-
-generator.buildProductions = function buildProductions(bnf, productions, nonterminals, symbols, operators) {
+// options:
+//   template: string
+//     Which template to use
+generator.buildProductions = function buildProductions(bnf, productions, nonterminals, symbols, operators, types, options) {
     var actions = [];
     var actionGroups = {};
     var prods, symbol;
     var productions_ = [0];
     var symbolId = 1;
     var symbols_ = {};
+    var types = types;
 
     var her = false; // has error recovery
 
@@ -250,8 +254,15 @@ generator.buildProductions = function buildProductions(bnf, productions, nonterm
             prods = bnf[symbol].slice(0);
         }
 
+        const tsMode = options?.template === "typescript";
+        const currentType = types[symbol];
+        if (tsMode && !currentType && options?.warnUntypedNTerm) {
+            console.log(`Type of ${symbol} is not specified.`);
+        }
+
         prods.forEach(buildProduction);
     }
+    // Labels, action and break
     for (var action in actionGroups)
       actions.push(actionGroups[action].join(' '), action, 'break;');
 
@@ -268,6 +279,7 @@ generator.buildProductions = function buildProductions(bnf, productions, nonterm
     this.terminals = terms;
     this.terminals_ = terms_;
     this.symbols_ = symbols_;
+    this.types = types;
 
     this.productions_ = productions_;
 
@@ -293,7 +305,8 @@ generator.buildProductions = function buildProductions(bnf, productions, nonterm
 
             if (typeof handle[1] === 'string' || handle.length == 3) {
                 // semantic action specified
-                var label = 'case ' + (productions.length+1) + ':', action = handle[1];
+                var label = 'case ' + (productions.length+1) + ':' + (options?.showNTerm ? ` /* ${symbol} */` : "");
+                var action = handle[1];
 
                 // replace named semantic values ($nonterminal)
                 if (action.match(/[$@][a-zA-Z][a-zA-Z0-9_]*/)) {
@@ -323,13 +336,31 @@ generator.buildProductions = function buildProductions(bnf, productions, nonterm
                             return names[pl] ? '@'+names[pl] : str;
                         });
                 }
+
+                const tsMode = options.template === "typescript";
+                const currentType = types[symbol];
+                if (tsMode && currentType) {
+                    // insert type annotation for $$
+                    const typeAnnotation = 'const _this = this as { $?: ' + currentType + ' };';
+                    action = '{' + typeAnnotation + action + '}';
+                }
                 action = action
                     // replace references to $$ with this.$, and @$ with this._$
-                    .replace(/([^'"])\$\$|^\$\$/g, '$1this.$').replace(/@[0$]/g, "this._$")
-
+                    .replace(/([^'"])\$\$|^\$\$/g, tsMode && currentType ? '$1_this.$' : '$1this.$').replace(/@[0$]/g, "this._$")
                     // replace semantic value references ($n) with stack value (stack[n])
                     .replace(/\$(-?\d+)/g, function (_, n) {
-                        return "$$[$0" + (parseInt(n, 10) - rhs.length || '') + "]";
+                        const N = parseInt(n, 10);
+                        var s = "$$[$0" + (N - rhs.length || '') + "]"
+                        if (tsMode) {
+                            const r = rhs[N - 1];// Name of $n
+                            if (r) {
+                                const t = types[r];// Type of $n
+                                if (t) {
+                                    s = '(<' + t + '>(' + s + '))';
+                                }
+                            }
+                        }
+                        return s;
                     })
                     // same as above for location references (@n)
                     .replace(/@(-?\d+)/g, function (_, n) {

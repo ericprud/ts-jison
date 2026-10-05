@@ -1,4 +1,10 @@
-import { TokenLocation, ParseErrorType } from '@ts-jison/common';
+import { TokenLocation, ParseErrorType, ParseErrorHashType } from '@ts-jison/common';
+
+interface YY {
+  parser?: {
+    parseError: ParseErrorType
+  };
+}
 
 export interface JisonLexerApi {
   EOF: number;
@@ -28,22 +34,22 @@ export interface JisonLexerApi {
     backtrack_lexer?: boolean;
   };
 
-  performAction: (yy: any, yy_: any, $avoiding_name_collisions: number, YY_START: any) => any;
+  performAction: (yy: YY, yy_: any, $avoiding_name_collisions: number, YY_START: any) => any;
   rules: RegExp[];
   conditions: { [name: string]: number[] /* set */ };
-  yy?: any;
+  yy?: YY;
   reject: () => JisonLexerApi;
   stateStackSize: () => number;
   yylloc: TokenLocation;
   yyleng: number;
   yytext?: string;
   match?: string;
-  yylineno?: number;
+  yylineno: number;
 }
 
 export abstract class JisonLexer {
   constructor (
-    public yy: any = {},
+    public yy: YY = {},
   ) { }
 
   public EOF: number = 1;
@@ -53,7 +59,7 @@ export abstract class JisonLexer {
   _more?: boolean;
   _backtrack?: boolean;
   done?: boolean;
-  yylineno?: number;
+  yylineno: number;
   yyleng: number = 0;
   yytext?: string;
   conditionStack?: string[];
@@ -68,7 +74,7 @@ export abstract class JisonLexer {
   };
   offset?: number;
 
-  parseError(str: string, hash: { [key: string]: any }): void {
+  parseError(str: string, hash: ParseErrorHashType): void | never {
     if (this.yy.parser) {
       this.yy.parser.parseError(str, hash);
     } else {
@@ -171,10 +177,13 @@ export abstract class JisonLexer {
     if (this.options.backtrack_lexer) {
       this._backtrack = true;
     } else {
-      return <JisonLexer><unknown>this.parseError('Lexical error on line ' + (this.yylineno! + 1) + '. You can only invoke reject() in the lexer when the lexer is of the backtracking persuasion (options.backtrack_lexer = true).\n' + this.showPosition(), {
+      this.parseError('Lexical error on line ' + (this.yylineno! + 1) + '. You can only invoke reject() in the lexer when the lexer is of the backtracking persuasion (options.backtrack_lexer = true).\n' + this.showPosition(), {
         text: "",
         token: null,
-        line: this.yylineno
+        line: this.yylineno,
+        loc: this.yylloc,
+        recoverable: false,
+        expected: null
       });
 
     }
@@ -281,7 +290,7 @@ export abstract class JisonLexer {
   }
 
   // return next match in input
-  next(): number | boolean {
+  next(): number | boolean | undefined {
     if (this.done) {
       return this.EOF;
     }
@@ -330,10 +339,13 @@ export abstract class JisonLexer {
     if (this._input === "") {
       return this.EOF;
     } else {
-      return <number | boolean><unknown>this.parseError('Lexical error on line ' + (this.yylineno! + 1) + '. Unrecognized text.\n' + this.showPosition(), {
+      this.parseError('Lexical error on line ' + (this.yylineno! + 1) + '. Unrecognized text.\n' + this.showPosition(), {
         text: "",
         token: null,
-        line: this.yylineno
+        line: this.yylineno,
+        loc: this.yylloc,
+        recoverable: false,
+        expected: []
       });
     }
   }

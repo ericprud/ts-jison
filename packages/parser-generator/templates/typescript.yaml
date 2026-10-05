@@ -9,7 +9,7 @@ Constructor: |
       table: Array<StateType>;
       defaultActions: {[key:number]: any} = {{DEFAULT_ACTIONS}};
   
-      constructor (yy = {}, lexer = new {{NAME}}Lexer(yy)) {
+      constructor (yy: any = {}, lexer = new {{NAME}}Lexer(yy)) {
         super(yy, lexer);
 
         // shorten static method to just `o` for terse STATE_TABLE
